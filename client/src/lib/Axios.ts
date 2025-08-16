@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const Axios = axios.create({
-    baseURL: "http://localhost:8080/api/v1",
+    baseURL: process.env.Backend_url,
     withCredentials: true
 })
 
