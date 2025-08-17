@@ -1,535 +1,525 @@
-'use client';
+"use client"
 
-// React and Next.js imports
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
+import Link from "next/link";
 import Image from "next/image";
-
-// Theme and UI component imports
+import { useState, useEffect, useRef, ReactNode, HTMLAttributes } from "react";
 import { useTheme } from "next-themes";
-import { Button } from '@/components/ui/button';
-import { Switch } from "@/components/ui/switch";
-
-// Icon imports from lucide-react
 import {
-    Briefcase, ClipboardList, Users, CheckCircle, ArrowRight, BarChart2, ShieldCheck, Clock,
-    Calendar, Settings, Mail, Moon, SunMedium, ArrowUp, Star, ChevronDown, Twitter, Linkedin, Github,
-    Menu, X, Zap, TrendingUp, Award, Globe
-} from 'lucide-react';
+    SunMedium,
+    Moon,
+    ClipboardList,
+    CheckCircle,
+    BarChart2,
+    Mail,
+    Settings,
+    Calendar,
+    Linkedin,
+    Github,
+    Menu,
+    X,
+    ArrowUp,
+} from "lucide-react";
 
-// Animation imports from GSAP
-import gsap from 'gsap';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'; // FIX: Import ScrollToPlugin
-import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+// Define types for common props
+type CommonProps = {
+    className?: string;
+};
 
-// Register GSAP plugins
-gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollToPlugin); // FIX: Register ScrollToPlugin
+// Define props for the FeatureCard component
+interface FeatureCardProps {
+    icon: ReactNode;
+    title: string;
+    description: string;
+}
 
-// Main Landing Page Component
-export default function LandingPage() {
-    const container = useRef<HTMLDivElement>(null);
+// Define props for the StepCard component
+interface StepCardProps {
+    number: string;
+    icon: ReactNode;
+    title: string;
+    description: string;
+}
+
+// Define props for the TestimonialCard component
+interface TestimonialCardProps {
+    name: string;
+    role: string;
+    text: string;
+    imageUrl: string;
+}
+
+// Define props for the FaqItem component
+interface FaqItemProps {
+    question: string;
+    answer: string;
+}
+
+const FeatureCard = ({ icon, title, description }: FeatureCardProps) => (
+    <div className="flex flex-col items-center text-center p-8 bg-white/50 dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-md hover:scale-[1.02] transition-transform duration-300">
+        <div className="mb-4 text-blue-500 dark:text-blue-400">{icon}</div>
+        <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+            {title}
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400">{description}</p>
+    </div>
+);
+
+const StepCard = ({ number, icon, title, description }: StepCardProps) => (
+    <div className="relative text-center p-8 border border-gray-200 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xl border-4 border-white dark:border-gray-900">
+            {number}
+        </div>
+        <div className="mt-6 mb-4">{icon}</div>
+        <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+            {title}
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400">{description}</p>
+    </div>
+);
+
+const TestimonialCard = ({ name, role, text, imageUrl }: TestimonialCardProps) => (
+    <div className="p-8 bg-white/50 dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-md flex flex-col items-center text-center">
+        <Image
+            src={imageUrl}
+            alt={name}
+            width={80}
+            height={80}
+            className="rounded-full mb-4 ring-2 ring-blue-500"
+        />
+        <p className="text-gray-600 dark:text-gray-400 italic mb-4">"{text}"</p>
+        <h4 className="font-bold text-gray-900 dark:text-gray-100">{name}</h4>
+        <p className="text-sm text-blue-600 dark:text-blue-400">{role}</p>
+    </div>
+);
+
+const FaqItem = ({ question, answer }: FaqItemProps) => (
+    <div className="bg-white/50 dark:bg-gray-800/50 p-6 rounded-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+        <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-gray-100">
+            {question}
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400">{answer}</p>
+    </div>
+);
+
+// Main Component
+const LandingPage = () => {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+    const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
     const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-    const [showScrollTop, setShowScrollTop] = useState(false);
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-    // GSAP Animations Hook
-    useGSAP(() => {
-        const tl = gsap.timeline({ delay: 0.2 });
-
-        tl.from('.navbar-container', { y: -100, opacity: 0, duration: 1, ease: 'power3.out' })
-            .from('.navbar-item', { y: -30, opacity: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out' }, '-=0.5');
-
-        tl.from('.hero-badge', { scale: 0, opacity: 0, duration: 0.8, ease: 'back.out(1.7)' }, '-=0.3')
-            .from('.hero-title', { y: 50, opacity: 0, duration: 1.2, ease: 'power3.out' }, '-=0.5')
-            .from('.hero-subtitle', { y: 30, opacity: 0, duration: 1, ease: 'power3.out' }, '-=0.8')
-            .from('.hero-buttons', { y: 30, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.6')
-            .from('.hero-stats-container .hero-stat', { y: 30, opacity: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out' }, '-=0.4');
-
-        tl.from('.hero-image', { y: 100, opacity: 0, scale: 0.8, duration: 1.5, ease: 'power3.out' }, '-=1')
-            .to('.hero-image', { y: -20, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-
-        gsap.to('.floating-particle', {
-            y: (i) => -20 + Math.random() * 20, // Add randomness
-            x: (i) => -15 + Math.random() * 30,
-            duration: 4 + Math.random() * 2,
-            repeat: -1, yoyo: true, ease: 'sine.inOut',
-            stagger: { each: 0.5, from: 'random' }
-        });
-
-        // FIX: Handle parallax effect with GSAP for performance and stability
-        gsap.utils.toArray<HTMLElement>('.parallax').forEach(elem => {
-            gsap.to(elem, {
-                yPercent: -20,
-                ease: "none",
-                scrollTrigger: {
-                    trigger: '.hero-section', // Trigger based on hero section
-                    start: "top top",
-                    end: "bottom top",
-                    scrub: true
-                }
-            });
-        });
-
-        const animateOnScroll = (selector: string, options = {}) => {
-            gsap.utils.toArray(selector).forEach((elem: any, index) => {
-                // FIX: Simplified the scroll animation to be more stable
-                gsap.from(elem, {
-                    scrollTrigger: {
-                        trigger: elem,
-                        start: "top 85%",
-                        toggleActions: "play none none none",
-                    },
-                    y: 60, opacity: 0, duration: 1, ease: "expo.out",
-                    delay: index * 0.1, ...options
-                });
-            });
-        };
-
-        animateOnScroll('.stat-item', { scale: 0.8 });
-        animateOnScroll('.feature-card');
-        animateOnScroll('.step-card', { x: -50 });
-        animateOnScroll('.testimonial-card', { scale: 0.9 });
-        animateOnScroll('.pricing-card');
-        animateOnScroll('.faq-item', { x: 30 });
-        animateOnScroll('.footer-col', { y: 30 });
-
-        gsap.from('.cta-section', {
-            scrollTrigger: { trigger: '.cta-section', start: "top 75%" },
-            scale: 0.5, opacity: 0, rotation: 5, duration: 1.5, ease: "expo.out"
-        });
-
-        gsap.utils.toArray<HTMLElement>('.magnetic-btn').forEach(btn => {
-            btn.addEventListener('mousemove', (e) => {
-                const { offsetX, offsetY, target } = e;
-                const { clientWidth, clientHeight } = target as HTMLElement;
-                const xPos = (offsetX / clientWidth) - 0.5;
-                const yPos = (offsetY / clientHeight) - 0.5;
-                gsap.to(btn, { x: xPos * 20, y: yPos * 20, scale: 1.05, duration: 0.4, ease: 'power2.out' });
-            });
-            btn.addEventListener('mouseleave', () => {
-                gsap.to(btn, { x: 0, y: 0, scale: 1, duration: 0.4, ease: 'elastic.out(1, 0.3)' });
-            });
-        });
-
-        gsap.utils.toArray<HTMLElement>('.counter').forEach(counter => {
-            gsap.from(counter, {
-                scrollTrigger: { trigger: counter, start: "top 80%" },
-                textContent: 0, duration: 2, ease: "power1.out",
-                snap: { textContent: 1 }
-            });
-        });
-
-    }, { scope: container });
-
-    // FIX: Simplified useEffect to only handle state updates, preventing loops
-    useEffect(() => {
-        setMounted(true);
-        const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 300);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []); // Empty dependency array is correct and safe here
-
-    // FIX: Corrected the 'scrollTo' syntax
-    const scrollToTop = () => {
-        gsap.to(window, { scrollTo: { y: 0 }, duration: 1.5, ease: 'power3.inOut' });
-    };
+    const container = useRef<HTMLDivElement>(null);
 
     const scrollToSection = (id: string) => {
-        gsap.to(window, {
-            scrollTo: { y: `#${id}`, offsetY: 100 },
-            duration: 1,
-            ease: 'power2.inOut'
-        });
+        const element = document.getElementById(id);
+        if (element) {
+            window.scrollTo({
+                top: element.offsetTop - 70, // Offset for fixed navbar
+                behavior: "smooth",
+            });
+        }
     };
 
-    if (!mounted) return null;
-    const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => {
-        return (
-            <div className="feature-card bg-white dark:bg-gray-800/50 rounded-xl shadow-sm p-8 hover:shadow-md transition-all duration-300 border border-gray-100 dark:border-gray-700 hover:border-blue-100 dark:hover:border-blue-800">
-                <div className="flex justify-center mb-5">
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/50 rounded-lg">
-                        {icon}
-                    </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-center text-gray-800 dark:text-gray-100">{title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-center">{description}</p>
-            </div>
-        );
+    const handleScroll = () => {
+        if (window.scrollY > 300) {
+            setShowScrollTop(true);
+        } else {
+            setShowScrollTop(false);
+        }
     };
 
-    const StepCard = ({ number, icon, title, description }: { number: string; icon: React.ReactNode; title: string; description: string }) => {
-        return (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all">
-                <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center mr-4 font-bold text-lg">
-                        {number}
-                    </div>
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg">
-                        {icon}
-                    </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-100">{title}</h3>
-                <p className="text-gray-600 dark:text-gray-400">{description}</p>
-            </div>
-        );
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
+
+    useEffect(() => {
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
     return (
-        <div className="bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100 selection:bg-blue-200 dark:selection:bg-blue-800 overflow-x-hidden" ref={container}>
-
-            {/* Floating Background Elements */}
+        <div
+            className="bg-blue-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans antialiased overflow-x-hidden"
+            ref={container}
+        >
+            {/* Floating Background Elements - Simplified */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="floating-particle absolute top-20 left-10 w-4 h-4 bg-blue-400/20 rounded-full"></div>
-                <div className="floating-particle absolute top-40 right-20 w-6 h-6 bg-purple-400/20 rounded-full"></div>
-                <div className="floating-particle absolute top-60 left-1/3 w-3 h-3 bg-green-400/20 rounded-full"></div>
-                <div className="floating-particle absolute bottom-40 right-1/4 w-5 h-5 bg-yellow-400/20 rounded-full"></div>
-                <div className="floating-particle absolute bottom-60 left-20 w-4 h-4 bg-red-400/20 rounded-full"></div>
+                <div className="absolute top-[20%] left-[15%] w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] animate-pulse-slow"></div>
+                <div className="absolute bottom-[20%] right-[15%] w-80 h-80 bg-purple-500/10 rounded-full blur-[120px] animate-pulse-slow delay-500"></div>
             </div>
 
-            {/* Enhanced Modern Navbar */}
-            <nav className="navbar-container px-6 py-2 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl w-full fixed top-0 z-50 border-b border-white/20 dark:border-gray-800/20 shadow-lg shadow-black/5">
+            {/* Modern Navbar */}
+            <nav className="navbar-container px-6 py-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl w-full fixed top-0 z-50 border-b border-gray-200 dark:border-gray-800 shadow-md">
                 <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
-                    <div className="navbar-item">
-                        <Link href="/" className="flex items-center gap-3 group">
-                            <div className="relative">
-                                <Image src="/logo.jpg" alt="Logo" width={30} height={30} className='rounded-xl shadow-md group-hover:shadow-lg transition-shadow duration-300' />
-                                <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-blue-500/20 to-purple-500/20 group-hover:opacity-100 opacity-0 transition-opacity duration-300"></div>
-                            </div>
-                            <span className="hidden sm:block font-bold text-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">CruxCRM</span>
-                        </Link>
-                    </div>
+                    <Link href="/" className="flex items-center gap-2">
+                        <Image
+                            src="/logo.jpg"
+                            alt="CruxCRM Logo"
+                            width={36}
+                            height={36}
+                            className="rounded-lg shadow-sm"
+                        />
+                        <span className="hidden sm:block font-bold text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            CruxCRM
+                        </span>
+                    </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-1  p-1 rounded-full ">
+                    <div className="hidden md:flex items-center space-x-5">
                         {[
-                            { id: 'features', label: 'Features' }, { id: 'how-it-works', label: 'How it Works' },
-                            { id: 'pricing', label: 'Pricing' }, { id: 'faq', label: 'FAQ' }
-                        ].map(item => (
-                            <button key={item.id} onClick={() => scrollToSection(item.id)} className="navbar-item group flex items-center gap-2 px-4 py-2 rounded-full text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 shadow-sm hover:shadow-md">{item.label}</button>
+                            { id: "features", label: "Features" },
+                            { id: "how-it-works", label: "How it Works" },
+                            { id: "pricing", label: "Pricing" },
+                            { id: "faq", label: "FAQ" },
+                        ].map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => scrollToSection(item.id)}
+                                className="text-black dark:textgray-600 rounded-lg px-3 py-2 cursor-pointer dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-800"
+                            >
+                                {item.label}
+                            </button>
                         ))}
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div onClick={() => setTheme(theme === "light" ? "dark" : "light")} className="navbar-item cursor-pointer p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                            <SunMedium className={`w-5 h-5 transition-all duration-300 ${theme === 'light' ? 'block' : 'hidden'}`} />
-                            <Moon className={`w-5 h-5 transition-all duration-300 ${theme === 'dark' ? 'block' : 'hidden'}`} />
+                        <div
+                            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                            className="cursor-pointer p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
+                            <SunMedium
+                                className={`w-5 h-5 transition-all duration-300 ${theme === "light" ? "block" : "hidden"
+                                    }`}
+                            />
+                            <Moon
+                                className={`w-5 h-5 transition-all duration-300 ${theme === "dark" ? "block" : "hidden"
+                                    }`}
+                            />
                         </div>
 
-                        {/* FIX: Worker Login button added here */}
-                        <Link href="/worker/auth/login" className="navbar-item hidden sm:block">
-                            <Button variant="outline" className="magnetic-btn">
-                                Worker Login
-                            </Button>
-                        </Link>
-
-                        <Link href="/manager/auth/login" className="navbar-item">
-                            <Button className="magnetic-btn dark:text-white gap-2 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:shadow-lg transition-all">
+                        <Link href="/manager/auth/login" className="hidden sm:block">
+                            <button className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 text-white dark:text-gray-200 cursor-pointer">
                                 Manager Login
-                            </Button>
+                            </button>
+                        </Link>
+                        <Link href="/worker/auth/login">
+                            <button className="px-3 py-2 rounded-lg text-white bg-purple-600 hover:bg-purple-700 cursor-pointer">
+                                Worker Login
+                            </button>
                         </Link>
 
-                        <button className="navbar-item md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                        <button
+                            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
                             {mobileMenuOpen ? <X /> : <Menu />}
                         </button>
                     </div>
                 </div>
-
-                {/* Mobile Menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl border dark:border-gray-700">
-                        {['features', 'how-it-works', 'pricing', 'faq'].map((item, index) => (
-                            <button key={index} onClick={() => { scrollToSection(item); setMobileMenuOpen(false); }} className="block w-full text-left px-4 py-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 capitalize">{item}</button>
-                        ))}
-                        {/* Adding login links to mobile menu for better UX */}
-                        <div className='mt-4 pt-4 border-t dark:border-gray-700 space-y-2'>
+                        {["features", "how-it-works", "pricing", "faq"].map(
+                            (item, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => {
+                                        scrollToSection(item);
+                                        setMobileMenuOpen(false);
+                                    }}
+                                    className="block w-full text-left capitalize px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
+                                >
+                                    {item}
+                                </button>
+                            )
+                        )}
+                        <div className="mt-4 pt-4 border-t dark:border-gray-700 space-y-2">
                             <Link href="/worker/auth/login">
-                                <Button variant="outline" className="w-full">Worker Login</Button>
+                                <button className="w-full rounded-b-md bg-blue-600 text-white hover:bg-blue-700">
+                                    Worker Login
+                                </button>
                             </Link>
                             <Link href="/manager/auth/login">
-                                <Button className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">Manager Login</Button>
+                                <button className="w-full rounded-b-md bg-purple-600 text-white hover:bg-purple-700">
+                                    Manager Login
+                                </button>
                             </Link>
                         </div>
                     </div>
                 )}
             </nav>
 
-            {/* Enhanced Hero Section */}
-            <section className="relative py-20 md:py-32 px-6 text-center max-w-7xl mx-auto">
-                <div className="absolute inset-0 pointer-events-none"><div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl"></div><div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl"></div></div>
-                <div className="hero-badge inline-block px-6 py-3 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-full text-sm font-semibold text-blue-700 dark:text-blue-300 mb-8 border border-blue-200 dark:border-blue-700">🚀 Transform Your Sales Process Today</div>
-                <h1 className="hero-title text-6xl md:text-8xl font-black mb-8 leading-tight"><span className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 dark:from-white dark:via-blue-100 dark:to-purple-100 bg-clip-text text-transparent">Supercharge Your</span><br /><span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">Lead Generation</span></h1>
-                <p className="hero-subtitle text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">Revolutionary AI-powered lead management with intelligent distribution, real-time analytics, and seamless team collaboration. Boost conversions by 300% and accelerate your growth.</p>
-                <div className="hero-buttons flex flex-col sm:flex-row justify-center gap-6 mb-12">
-                    <Link href="/manager/auth/login"><Button size="lg" className="magnetic-btn gap-3 px-10 py-8 text-xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:shadow-xl transition-all rounded-2xl">Jump to Manager Login <ArrowRight className="w-6 h-6" /></Button></Link>
+            {/* Hero Section */}
+            <section className="relative py-24 md:py-32 px-6 text-center max-w-7xl mx-auto">
+                <div className="hero-badge inline-block px-5 py-2.5 bg-blue-100/50 dark:bg-blue-900/50 rounded-full text-sm font-semibold text-blue-700 dark:text-blue-300 mb-6 border border-blue-200 dark:border-blue-800">
+                    The Ultimate Lead Management Platform
                 </div>
-                <div className="hero-stats-container grid grid-cols-2 md:grid-cols-4 gap-8 mb-16 max-w-4xl mx-auto">
-                    <div className="hero-stat text-center"><div className="counter text-3xl font-bold text-blue-600" data-value="50000">574</div><div className="text-sm text-gray-600 dark:text-gray-400">Leads Processed</div></div>
-                    <div className="hero-stat text-center"><div className="counter text-3xl font-bold text-purple-600" data-value="300">20</div><div className="text-sm text-gray-600 dark:text-gray-400">% Conversion Boost</div></div>
-                    <div className="hero-stat text-center"><div className="counter text-3xl font-bold text-green-600" data-value="1000">120</div><div className="text-sm text-gray-600 dark:text-gray-400">Happy Customers</div></div>
-                    <div className="hero-stat text-center"><div className="counter text-3xl font-bold text-orange-600" data-value="99">24</div><div className="text-sm text-gray-600 dark:text-gray-400">% Uptime</div></div>
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight">
+                    <span className="bg-gradient-to-br from-gray-900 via-gray-700 to-gray-500 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                        Scale Your Sales with
+                    </span>
+                    <br />
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        CruxCRM
+                    </span>
+                </h1>
+                <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+                    Unleash the power of AI to automate lead distribution, empower your
+                    team, and convert more leads into customers, faster.
+                </p>
+                <div className="hero-buttons flex flex-col sm:flex-row justify-center gap-4">
+                    <Link href="/manager/auth/login">
+                        <button 
+                            className="px-4 py-2 text-lg bg-black dark:bg-blue-700 text-white hover:bg-blue-700 rounded-xl cursor-pointer"
+                        >
+                            Get to Manager Dashboard
+                        </button>
+                    </Link>
+                    <Link href="/features">
+                        <button
+                            className="px-4 py-2 text-xl text-gray-800 bg-gray-200 dark:bg-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 rounded-xl cursor-pointer"
+                        >
+                            Learn More
+                        </button>
+                    </Link>
                 </div>
-                <div className="hero-image relative"><div className="relative rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-2xl border dark:border-gray-700 max-w-4xl max-h-2xl object-contain mx-auto"><Image src="/crm.webp" alt="Dashboard Preview" width={1200} height={600} className="rounded-xl max-h-3xl shadow-inner" priority /><div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-blue-500/20 via-transparent to-purple-500/20 pointer-events-none"></div></div></div>
-            </section>
-
-            {/* Stats Section */}
-            <section className="py-16 bg-white dark:bg-gray-900">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                        {/* --- Stat Item 1 --- */}
-                        <div className="stat-item p-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                            <h3 className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">95%</h3>
-                            <p className="text-gray-600 dark:text-gray-400">Faster Lead Assignment</p>
-                        </div>
-                        {/* --- Stat Item 2 --- */}
-                        <div className="stat-item p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
-                            <h3 className="text-4xl font-bold text-indigo-600 dark:text-indigo-400 mb-2">3x</h3>
-                            <p className="text-gray-600 dark:text-gray-400">Conversion Increase</p>
-                        </div>
-                        {/* --- Stat Item 3 --- */}
-                        <div className="stat-item p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-                            <h3 className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">24/7</h3>
-                            <p className="text-gray-600 dark:text-gray-400">Real-time Monitoring</p>
-                        </div>
-                        {/* --- Stat Item 4 --- */}
-                        <div className="stat-item p-6 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                            <h3 className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">10k+</h3>
-                            <p className="text-gray-600 dark:text-gray-400">Leads Managed Daily</p>
-                        </div>
-                    </div>
+                <div className="hero-image relative mt-16 p-4 bg-white/50 dark:bg-gray-800/50 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-md max-w-5xl mx-auto">
+                    <Image
+                        src="/crm.webp"
+                        alt="Dashboard Preview"
+                        width={1200}
+                        height={600}
+                        className="rounded-2xl"
+                        priority
+                    />
                 </div>
             </section>
 
             {/* Features Section */}
-            <section id="features" className="py-20 px-6 bg-gray-50 dark:bg-gray-800">
+            <section
+                id="features"
+                className="py-20 px-6 bg-gray-200 dark:bg-gray-900"
+            >
                 <div className="text-center mb-16 max-w-3xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-                        Powerful Features for Your Sales Team
+                    <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                        Core Features
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 text-lg">
-                        Everything you need to streamline your lead management process and maximize conversions
+                        A suite of tools designed to optimize your sales workflow and
+                        maximize your team's efficiency.
                     </p>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
                     <FeatureCard
-                        icon={<ClipboardList className="w-10 h-10 text-blue-600 dark:text-blue-400" />}
-                        title="Smart Lead Distribution"
-                        description="Automatically assign leads based on availability, skills, and performance metrics for optimal results."
+                        icon={<ClipboardList className="w-12 h-12" />}
+                        title="Intelligent Lead Routing"
+                        description="Our smart algorithm assigns leads to the best-suited agent, ensuring every opportunity is handled efficiently."
                     />
                     <FeatureCard
-                        icon={<Users className="w-10 h-10 text-purple-600 dark:text-purple-400" />}
-                        title="Role-Based Dashboards"
-                        description="Custom interfaces for managers and workers with only relevant information and actions."
+                        icon={<BarChart2 className="w-12 h-12" />}
+                        title="Advanced Analytics"
+                        description="Gain deep insights into team performance, conversion funnels, and lead sources with real-time dashboards."
                     />
                     <FeatureCard
-                        icon={<CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />}
-                        title="Progress Tracking"
-                        description="Monitor lead status, follow-ups, and completions with visual indicators and notifications."
-                    />
-                    <FeatureCard
-                        icon={<BarChart2 className="w-10 h-10 text-orange-600 dark:text-orange-400" />}
-                        title="Performance Analytics"
-                        description="Detailed reports on conversion rates, response times, and team productivity."
-                    />
-                    <FeatureCard
-                        icon={<ShieldCheck className="w-10 h-10 text-red-600 dark:text-red-400" />}
-                        title="Data Security"
-                        description="Enterprise-grade security with encryption and role-based access controls."
-                    />
-                    <FeatureCard
-                        icon={<Clock className="w-10 h-10 text-yellow-600 dark:text-yellow-400" />}
-                        title="Real-time Updates"
-                        description="Instant notifications and activity streams keep everyone informed of changes."
+                        icon={<CheckCircle className="w-12 h-12" />}
+                        title="Customizable Workflows"
+                        description="Tailor the lead management process to your business needs, from initial contact to closing the deal."
                     />
                 </div>
             </section>
 
             {/* How It Works Section */}
-            <section id="how-it-works" className="py-20 px-6 bg-white dark:bg-gray-900">
+            <section
+                id="how-it-works"
+                className="py-20 px-6 bg-blue-100 dark:bg-gray-950"
+            >
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-                            How CruxCRM Works ??
+                        <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                            How It Works
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            A simple three-step process to transform your lead management
+                            Our streamlined process makes lead management simple and effective.
                         </p>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
                         <StepCard
                             number="1"
-                            icon={<Mail className="w-8 h-8" />}
-                            title="Capture Leads"
-                            description="Import leads from multiple sources or enter them manually into the system."
+                            icon={<Mail className="w-8 h-8 text-blue-600" />}
+                            title="Integrate"
+                            description="Connect your lead sources like web forms, APIs, and more to CruxCRM in minutes."
                         />
                         <StepCard
                             number="2"
-                            icon={<Settings className="w-8 h-8" />}
-                            title="Automate Distribution"
-                            description="Our algorithm assigns leads to the most appropriate team member instantly."
+                            icon={<Settings className="w-8 h-8 text-purple-600" />}
+                            title="Automate"
+                            description="Our system automatically sorts and assigns leads based on your custom rules and team availability."
                         />
                         <StepCard
                             number="3"
-                            icon={<Calendar className="w-8 h-8" />}
-                            title="Track & Convert"
-                            description="Monitor progress, set follow-ups, and close more deals efficiently."
+                            icon={<Calendar className="w-8 h-8 text-green-600" />}
+                            title="Convert"
+                            description="Your team receives hot leads instantly, allowing them to follow up and convert leads faster than ever."
                         />
                     </div>
                 </div>
             </section>
 
-            {/* NOTE: You will need to define the FeatureCard and StepCard components with dark mode support as well. */}
-            {/* Here are example definitions for them: */}
-
-
-
             {/* Testimonials Section */}
             <section id="testimonials" className="py-24 px-6 bg-white dark:bg-gray-900">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Trusted by Industry Leaders</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-xl leading-relaxed max-w-3xl mx-auto mb-20">Our clients have seen unprecedented growth and efficiency. Here's what they have to say about their journey with CruxCRM.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                        <TestimonialCard name="Priya Sharma" role="Sales Head, Tech Innovators" text="CruxCRM revolutionized our sales process. Lead assignment is now instant, and our conversion rates have tripled! It's an indispensable tool for our team." imageUrl="https://i.pravatar.cc/150?img=1" />
-                        <TestimonialCard name="Ankit Verma" role="CEO, Growth Solutions" text="The analytics dashboard is a game-changer. I have a clear, real-time view of my team's performance, which helps in making sharp, data-driven decisions." imageUrl="https://i.pravatar.cc/150?img=3" />
-                        <TestimonialCard name="Sunita Rao" role="Ops Manager, RealEstate Co." text="The simplicity and power of this tool are unmatched. Our team was onboarded in a single day, and the productivity boost was immediate and significant." imageUrl="https://i.pravatar.cc/150?img=5" />
+                    <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                        What Our Clients Say
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg max-w-3xl mx-auto mb-16">
+                        Hear from our satisfied customers who have transformed their sales
+                        process with CruxCRM.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <TestimonialCard
+                            name="Priya Sharma"
+                            role="Sales Head, Tech Innovators"
+                            text="CruxCRM has been a game-changer for our team. The intelligent routing has boosted our efficiency and our conversion rates are at an all-time high."
+                            imageUrl="https://i.pravatar.cc/150?img=1"
+                        />
+                        <TestimonialCard
+                            name="Ankit Verma"
+                            role="CEO, Growth Solutions"
+                            text="The analytics are incredibly insightful. I can now make data-driven decisions that directly impact our bottom line. Highly recommend!"
+                            imageUrl="https://i.pravatar.cc/150?img=3"
+                        />
+                        <TestimonialCard
+                            name="Sunita Rao"
+                            role="Ops Manager, RealEstate Co."
+                            text="The simplicity of this platform is its greatest strength. Our team was up and running in a day, and the productivity gains were immediate."
+                            imageUrl="https://i.pravatar.cc/150?img=5"
+                        />
                     </div>
                 </div>
             </section>
 
             {/* FAQ Section */}
-            <section id="faq" className="py-24 px-6 bg-white dark:bg-gray-900">
+            <section id="faq" className="py-24 px-6 bg-blue-100 dark:bg-gray-900">
                 <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-20"><h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Common Questions</h2><p className="text-gray-600 dark:text-gray-400 text-xl leading-relaxed">Have questions? We've got answers. If you don't see your question here, feel free to contact us.</p></div>
-                    <div className="space-y-6">
-                        <FaqItem question="Can I integrate CruxCRM with my existing CRM?" answer="Yes! We offer seamless integrations with popular CRMs like Salesforce, HubSpot, and Zoho. Custom integrations are also available on our Enterprise plan." />
-                        <FaqItem question="Is there a free trial available?" answer="Absolutely. You can sign up for a 14-day free trial on our Professional plan to explore all the features, with no credit card required." />
-                        <FaqItem question="How many users can I add to my account?" answer="Our plans are priced per user. You can add as many users as you need. The 'Starter' plan is ideal for teams up to 5, while the 'Professional' plan suits larger teams. 'Enterprise' has no limits." />
-                        <FaqItem question="Is it possible to import my existing leads?" answer="Of course. We provide a simple bulk-upload tool using an Excel/CSV template to get your existing leads into the system in minutes." />
-                        <FaqItem question="Does the system work on mobile devices?" answer="Yes, CruxCRM is fully responsive and works beautifully on all devices, including desktops, tablets, and smartphones, so your team can manage leads on the go." />
-                        <FaqItem question="What kind of support can I expect?" answer="We offer email support on the Starter plan and priority email and chat support on the Professional plan. Enterprise clients receive a dedicated account manager and phone support." />
+                    <div className="text-center mb-12">
+                        <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
+                            FAQs
+                        </h2>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg">
+                            Find answers to the most common questions about CruxCRM.
+                        </p>
+                    </div>
+                    <div className="space-y-4">
+                        <FaqItem
+                            question="Can I integrate CruxCRM with my existing CRM?"
+                            answer="Yes, we support seamless integrations with major CRMs via our API. Custom integrations are available on our enterprise plans."
+                        />
+                        <FaqItem
+                            question="Is there a free trial?"
+                            answer="Yes, we offer a 14-day free trial with no credit card required. This gives you full access to all features to see how it can help your business."
+                        />
+                        <FaqItem
+                            question="How do you handle data security?"
+                            answer="Data security is our top priority. We use industry-standard encryption protocols and follow strict access control policies to keep your data safe."
+                        />
                     </div>
                 </div>
             </section>
 
             {/* Footer */}
             <footer className="bg-gray-900 dark:bg-black text-gray-400">
-                <div className="max-w-7xl mx-auto px-6 py-10">
-                    {/* Top Section */}
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-6">
-
-                        {/* Logo + Name */}
-                        <Link href="/" className="flex items-center gap-2">
-                            <Image
-                                src="/logo.jpg"
-                                alt="Logo"
-                                width={32}
-                                height={32}
-                                className="rounded-lg"
-                            />
-                            <span className="text-white font-bold text-xl">CruxCRM</span>
-                        </Link>
-
-                        {/* Tagline */}
-                        <p className="text-sm md:text-base max-w-md text-center md:text-left">
-                            The ultimate platform for intelligent lead management and sales automation.
-                        </p>
-
-                        {/* Socials */}
-                        <div className="flex justify-center md:justify-end gap-4">
-                            <a href="https://www.linkedin.com/in/abhay-k-5a0902278/" aria-label="LinkedIn">
-                                <Linkedin className="w-5 h-5 hover:text-white transition-colors" />
-                            </a>
-                            <a href="https://github.com/Abhay-Kushwaha" aria-label="GitHub">
-                                <Github className="w-5 h-5 hover:text-white transition-colors" />
-                            </a>
+                <div className="max-w-7xl mx-auto px-6 py-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="flex flex-col items-start gap-4">
+                            <Link href="/" className="flex items-center gap-2">
+                                <Image
+                                    src="/logo.jpg"
+                                    alt="CruxCRM Logo"
+                                    width={36}
+                                    height={36}
+                                    className="rounded-lg"
+                                />
+                                <span className="text-white font-bold text-2xl">CruxCRM</span>
+                            </Link>
+                            <p className="text-sm max-w-xs">
+                                The ultimate platform for intelligent lead management and sales
+                                automation.
+                            </p>
+                            <div className="flex gap-4 mt-4">
+                                <a
+                                    href="https://www.linkedin.com/in/abhay-k-5a0902278/"
+                                    aria-label="LinkedIn"
+                                >
+                                    <Linkedin className="w-6 h-6 hover:text-white transition-colors" />
+                                </a>
+                                <a
+                                    href="https://github.com/Abhay-Kushwaha"
+                                    aria-label="GitHub"
+                                >
+                                    <Github className="w-6 h-6 hover:text-white transition-colors" />
+                                </a>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white mb-4">Quick Links</h3>
+                            <ul className="space-y-2">
+                                <li>
+                                    <button
+                                        onClick={() => scrollToSection("features")}
+                                        className="hover:text-white transition-colors"
+                                    >
+                                        Features
+                                    </button>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => scrollToSection("how-it-works")}
+                                        className="hover:text-white transition-colors"
+                                    >
+                                        How it Works
+                                    </button>
+                                </li>
+                                <li>
+                                    <Link
+                                        href="/pricing"
+                                        className="hover:text-white transition-colors"
+                                    >
+                                        Pricing
+                                    </Link>
+                                </li>
+                                <li>
+                                    <button
+                                        onClick={() => scrollToSection("faq")}
+                                        className="hover:text-white transition-colors"
+                                    >
+                                        FAQ
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white mb-4">Contact</h3>
+                            <ul className="space-y-2">
+                                <li>Email: contact@cruxcrm.com</li>
+                                <li>Phone: +1 (555) 123-4567</li>
+                                <li>Address: 123 Lead St, Sales City, USA</li>
+                            </ul>
                         </div>
                     </div>
-
-                    {/* Bottom Section */}
                     <div className="border-t border-gray-800 mt-10 pt-6 text-center text-sm">
                         <p>&copy; {new Date().getFullYear()} Code With Abhay</p>
                     </div>
                 </div>
             </footer>
 
-            {/* Scroll to Top Button */}
+            {/* Scroll to Top button */}
             <button
                 onClick={scrollToTop}
-                className={`fixed bottom-6 right-6 p-4 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all duration-300 z-50 ${showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                aria-label="Scroll to top">
+                className={`fixed bottom-6 right-6 p-4 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all duration-300 z-50 ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                    }`}
+                aria-label="Scroll to top"
+            >
                 <ArrowUp className="w-6 h-6" />
             </button>
         </div>
     );
-}
-
-// --- Reusable Card Components ---
-
-const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
-    <div className="feature-card bg-white dark:bg-gray-800/50 rounded-2xl p-8 text-center hover:-translate-y-2 transition-transform duration-300 border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10">
-        <div className="inline-block p-4 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-2xl mb-6">{icon}</div>
-        <h3 className="text-2xl font-bold mb-4">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{description}</p>
-    </div>
-);
-
-const StepCard = ({ number, icon, title, description }: { number: string; icon: React.ReactNode; title: string; description: string }) => (
-    <div className="step-card bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-xl border border-gray-200/50 dark:border-gray-700/50 z-10 hover:-translate-y-2 transition-transform duration-300">
-        <div className="flex justify-center mb-6"><div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center font-black text-3xl shadow-lg">{number}</div></div>
-        <div className="inline-block p-3 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 rounded-xl mb-4">{icon}</div>
-        <h3 className="text-xl font-bold mb-3">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-400">{description}</p>
-    </div>
-);
-
-const TestimonialCard = ({ name, role, text, imageUrl }: { name: string; role: string; text: string; imageUrl: string; }) => (
-    <div className="testimonial-card bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200/50 dark:border-gray-700/50 h-full flex flex-col text-left hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-2 transition-all duration-300">
-        <div className="flex items-center gap-1 mb-5">{[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />)}</div>
-        <p className="text-gray-700 dark:text-gray-300 mb-6 flex-grow text-lg">"{text}"</p>
-        <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
-            <Image src={imageUrl} alt={name} width={56} height={56} className="rounded-full shadow-md" />
-            <div><p className="font-bold text-gray-900 dark:text-white text-lg">{name}</p><p className="text-sm text-gray-500 dark:text-gray-400">{role}</p></div>
-        </div>
-    </div>
-);
-
-const PricingCard = ({ plan, monthlyPrice, yearlyPrice, billingCycle, price, features, popular = false }: { plan: string, monthlyPrice?: number | string, yearlyPrice?: number | string, billingCycle?: 'monthly' | 'yearly', price?: string, features: string[], popular?: boolean }) => {
-    const currentPrice = price ? price : (billingCycle === 'yearly' ? yearlyPrice : monthlyPrice);
-    const priceRef = useRef<HTMLSpanElement>(null);
-
-    useGSAP(() => {
-        if (priceRef.current && typeof currentPrice === 'number') {
-            gsap.to(priceRef.current, { duration: 0.5, innerText: currentPrice, roundProps: "innerText", ease: "power2.inOut" });
-        }
-    }, [currentPrice]);
-
-    return (
-        <div className={`pricing-card rounded-2xl p-8 flex flex-col transition-all duration-300 ${popular ? 'border-2 border-blue-500 shadow-2xl shadow-blue-500/20 bg-white dark:bg-gray-800' : 'border border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800'}`}>
-            {popular && <div className="text-xs font-bold text-blue-600 bg-blue-100 dark:bg-blue-900/50 rounded-full px-4 py-1 self-center mb-6">MOST POPULAR</div>}
-            <h3 className="text-2xl font-bold mb-4">{plan}</h3>
-            <div className="mb-8"><span className="text-6xl font-black">{price ? price : '₹'}<span ref={priceRef}>{currentPrice}</span></span><span className="text-gray-500 dark:text-gray-400">{price ? '' : '/mo/user'}</span></div>
-            <ul className="space-y-4 text-left mb-10 flex-grow">{features.map((feature, i) => (<li key={i} className="flex items-center gap-4"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>{feature}</span></li>))}</ul>
-            <Button size="lg" variant={popular ? 'default' : 'outline'} className={`w-full py-6 text-lg rounded-xl ${popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}>Get Started</Button>
-        </div>
-    );
 };
 
-const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="faq-item bg-white dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <button onClick={() => setIsOpen(!isOpen)} className="w-full flex justify-between items-center text-left p-6 font-bold text-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <span>{question}</span><ChevronDown className={`w-6 h-6 transition-transform duration-300 ${isOpen ? 'rotate-180 text-blue-500' : ''}`} />
-            </button>
-            <div className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                <div className="overflow-hidden"><p className="px-6 pb-6 pt-0 text-gray-600 dark:text-gray-400 text-lg leading-relaxed">{answer}</p></div>
-            </div>
-        </div>
-    );
-};
+export default LandingPage;

@@ -25,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
+      <head>
+        <link rel="icon" href="/logo.jpg" />
+      </head>
       <body>
         <ThemeWrapper>{children} <Toaster /></ThemeWrapper>
       </body>
